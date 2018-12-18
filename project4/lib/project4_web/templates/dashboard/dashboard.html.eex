@@ -1,0 +1,192 @@
+<script type="text/javascript">
+function callURL(){
+    var miners = document.getElementById("miners").value;
+    var difficulty = document.getElementById("difficulty").value;
+
+    if (miners.length == 0)
+    miners = "0"
+
+    if (difficulty.length == 0)
+    difficulty = "0"
+
+    var newURL = window.location.protocol + "//" + window.location.host
+
+    window.location.replace(newURL + "/dashboard/" + miners + "/" + difficulty);
+}
+</script>
+
+<form>
+<center>
+<div class="temp" >
+	  <div style="width:60%; clear: both;">
+
+      <div style="width:20%; float: left;">Active Miners :</div>
+      <div style="width:80%; float: right;">
+        <input type="text" id="miners" placeholder="miners"></div>
+
+    </div>
+    	  <div style="width:60%; clear: both;">
+
+      <div style="width:20%; float: left;">Difficulty :</div>
+      <div style="width:80%; float: right;">
+        <input type="text" id="difficulty" placeholder="difficulty"></div>
+
+    </div>
+    	  <div style="width:60%; clear: both;">
+
+      <p>Node Count = <%= @numNodes %></p>
+
+    </div>
+
+</div>
+<center>
+
+<center><input type="button" id="button" value="Simulate" style="width:150px" onclick="callURL()"></center>
+</form>
+
+<script src="https://www.chartjs.org/dist/2.7.3/Chart.bundle.js"></script>
+  <script src="https://www.chartjs.org/samples/latest/utils.js"></script>
+  <style>
+  canvas {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+  }
+
+  canvas2 {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+  }
+  </style>
+</head>
+
+<body>
+  <div id="container" style="width: 50%;float: left">
+    <canvas id="canvas"></canvas>
+  </div>
+  <br />
+  <div id="container2" style="width: 50%; float: right">
+    <canvas id="canvas2"></canvas>
+    </div>
+
+  <script>
+
+    function bucket(data, upper, lower, buckets)
+    {
+      for (i = 0; i < data.length; i++)
+      {
+        for (j = 0; j < upper.length; j++)
+        {
+          if (data[i] >= lower[j] && data[i] <= upper[j])
+          {
+          buckets[j] = buckets[j] + 1;
+          break;
+          }
+        }
+      }
+      return buckets;
+    }
+
+    function substrToIntArray(sarray)
+    {
+      var iarray = [];
+      for (var i = 0; i < sarray.length; i++)
+      {
+        iarray.push(parseInt(sarray[i], 10));
+      }
+      return iarray;
+    }
+
+    //setup chart info for histograms
+    var upperRange = [49,99,149,199,249,299,349,Number.MAX_SAFE_INTEGER]
+    var lowerRange = [0,50,100,150,200,250,300,350]
+    var buckets = [0,0,0,0,0,0,0,0]
+
+    //---here we format the data from elixir---------
+    var walletStr = "<%= @walletInfo %>";
+    var walletSplit = walletStr.split(",");
+    var final = substrToIntArray(walletSplit);
+
+    //end testing area
+    //we will make a histogram for the nodes and a bar chart for the miners
+
+    document.write(final.length.toString() + " nodes reporting");
+    var realdata = bucket(final, upperRange, lowerRange, buckets)
+
+    var color = Chart.helpers.color;
+    var barChartData = {
+      labels: ['0-49', '50-99', '100-149', '150-199', '200-249', '250-299',
+              '300-349', '350-400+'],
+      datasets: [{
+        label: 'Nodes with bitcoins in given range',
+        backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
+        borderColor: window.chartColors.orange,
+        borderWidth: 1,
+        data: realdata
+      }]
+
+    };
+
+    //mining data setup
+     upperRange = [24,49,74,99,124,150]
+     lowerRange = [0,25,50,75,100,125]
+     buckets = [0,0,0,0,0,0]
+    //---here we format the data from elixir--------
+    var minerStr = "<%= @minerInfo %>";
+    var minerSplit = minerStr.split(",");
+    var final = substrToIntArray(minerSplit);
+
+    realdata = bucket(final, upperRange, lowerRange, buckets)
+    //----------------
+    //end testing area
+
+    var minerData = {
+      labels: ['0-24', '25-49', '50-74', '75-99', '100-124', '125-150+'],
+      datasets: [{
+        label: 'Number of bitcoins each miner has found',
+        backgroundColor: color(window.chartColors.orange).alpha(0.5).rgbString(),
+        borderColor: window.chartColors.blue,
+        borderWidth: 1,
+        data: realdata
+      }]
+
+    };
+
+    window.onload = function() {
+      var ctx = document.getElementById('canvas').getContext('2d');
+      var ctx2 = document.getElementById('canvas2').getContext('2d');
+
+      window.myBar = new Chart(ctx, {
+        type: 'bar',
+        data: barChartData,
+        options: {
+          responsive: true,
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: 'Live Data'
+          }
+        }
+      });
+
+      window.myBar2 = new Chart(ctx2, {
+        type: 'bar',
+        data: minerData,
+        options: {
+          responsive: true,
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: false,
+            text: 'Live Data'
+          }
+        }
+      });
+
+    };
+
+  </script>

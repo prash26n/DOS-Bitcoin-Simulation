@@ -1,0 +1,124 @@
+<html>
+<body>
+  <p>test</p>
+  <script src="https://www.chartjs.org/dist/2.7.3/Chart.bundle.js"></script>
+  	<script src="https://www.chartjs.org/samples/latest/utils.js"></script>
+  	<style>
+  	canvas {
+  		-moz-user-select: none;
+  		-webkit-user-select: none;
+  		-ms-user-select: none;
+  	}
+
+    canvas2 {
+  		-moz-user-select: none;
+  		-webkit-user-select: none;
+  		-ms-user-select: none;
+  	}
+  	</style>
+
+  <body>
+  	<div id="container" style="width: 50%;">
+  		<canvas id="canvas"></canvas>
+  	</div>
+    <br />
+    <div id="container2" style="width: 50%;">
+      <canvas id="canvas2"></canvas>
+      </div>
+  	<script>
+
+      function bucket(data, upper, lower, buckets)
+      {
+        for (i = 0; i < data.length; i++)
+        {
+          for (j = 0; j < upper.length; j++)
+          {
+            if (data[i] >= lower[j] && data[i] <= upper[j])
+            {
+            buckets[j] = buckets[j] + 1;
+            break;
+            }
+          }
+        }
+        return buckets;
+      }
+      var upperRange = [49,99,149,199,249,299]
+      var lowerRange = [0,50,100,150,200,250]
+      var buckets = [0,0,0,0,0,0]
+      var prefdata = [1,3,9,18,25,30,49,50,54,98,120,77,95]
+      var realdata = bucket(prefdata, upperRange, lowerRange, buckets)
+
+  		var color = Chart.helpers.color;
+
+  		var barChartData = {
+        labels: ['0-49', '50-99', '100-149', '150-199', '200-249', '250-299',
+                '300-349', '350-400+'],
+  			datasets: [{
+  				label: 'Nodes with bitcoins in given range',
+  				backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
+  				borderColor: window.chartColors.orange,
+  				borderWidth: 1,
+  				data: realdata
+  			}]
+
+  		};
+
+      //mining data setup
+       upperRange = [24,49,74,99,124,150]
+       lowerRange = [0,25,50,75,100,125]
+       buckets = [0,0,0,0,0,0]
+       prefdata = [1,3,9,18,25,30,49,50,54,98,120,77,95]
+       realdata = bucket(prefdata, upperRange, lowerRange, buckets)
+      //----------------
+
+      var minerData = {
+        labels: ['0-24', '25-49', '50-74', '75-99', '100-124', '125-150+'],
+  			datasets: [{
+  				label: 'Number of bitcoins each miner has found',
+  				backgroundColor: color(window.chartColors.orange).alpha(0.5).rgbString(),
+  				borderColor: window.chartColors.blue,
+  				borderWidth: 1,
+  				data: realdata
+  			}]
+
+  		};
+
+  		window.onload = function() {
+  			var ctx = document.getElementById('canvas').getContext('2d');
+        var ctx2 = document.getElementById('canvas2').getContext('2d');
+
+  			window.myBar = new Chart(ctx, {
+  				type: 'bar',
+  				data: barChartData,
+  				options: {
+  					responsive: true,
+  					legend: {
+  						position: 'top',
+  					},
+  					title: {
+  						display: true,
+  						text: 'Live Data'
+  					}
+  				}
+  			});
+
+        window.myBar2 = new Chart(ctx2, {
+  				type: 'bar',
+  				data: minerData,
+  				options: {
+  					responsive: true,
+  					legend: {
+  						position: 'top',
+  					},
+  					title: {
+  						display: false,
+  						text: 'Live Data'
+  					}
+  				}
+  			});
+
+  		};
+
+  	</script>
+</body>
+</html>
